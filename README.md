@@ -1,4 +1,4 @@
-travis ![Travis-CI Build](https://travis-ci.org/tatorodrigo/spring-boot-docker-k8s.svg?branch=master)
+[![Build Status](https://travis-ci.org/tatorodrigo/spring-boot-docker-k8s.svg?branch=master)](https://travis-ci.org/tatorodrigo/spring-boot-docker-k8s)
 
 # spring-boot-docker-k8s
 
