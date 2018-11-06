@@ -15,4 +15,6 @@ Also contains a gradle docker plugin to build an image and push it to Docker Hub
 Some endpoints available:
 - [/hello](https://spring-boot-docker-k8s.herokuapp.com/hello): show a simple hello message
 - [/hello/delay](https://spring-boot-docker-k8s.herokuapp.com/hello/delay): show a simple hello message with a 5 seconds delay
+- [/hello/date](https://spring-boot-docker-k8s.herokuapp.com/hello/date): show the local date time
+- [/hello/zoned-date?zoneId=](https://spring-boot-docker-k8s.herokuapp.com/hello/zoned-date?zoneId=America/Sao_Paulo): shows the local date time for a given zone, for example, America/Sao_Paulo
 - [/actuator/health](https://spring-boot-docker-k8s.herokuapp.com/actuator/health): show the app health
