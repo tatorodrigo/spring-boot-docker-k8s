@@ -27,6 +27,20 @@ public class HelloController {
         );
     }
 
+    @GetMapping("/date")
+    public String sayHelloDate() throws UnknownHostException {
+        log.info(
+                "m=sayHelloDate Now it is {}. Up time: {} ms.",
+                LocalDateTime.now(),
+                ManagementFactory.getRuntimeMXBean().getUptime()
+        );
+        return String.format(
+                "Hello from %s. Now it is %s (host local time).",
+                InetAddress.getLocalHost().getHostName(),
+                LocalDateTime.now()
+        );
+    }
+
     @GetMapping("/delay")
     public String sayHelloWithDelay() throws UnknownHostException, InterruptedException {
         log.info(
