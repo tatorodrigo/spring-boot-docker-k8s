@@ -45,6 +45,7 @@ dependencies {
  ********************************************************************************/
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 
 docker {
     registryCredentials {
@@ -82,4 +83,18 @@ task buildDockerImage(type: DockerBuildImage) {
     dependsOn createDockerfile
     inputDir = createDockerfile.destFile.get().asFile.parentFile
     tags = ["tatorodrigo/spring-boot-docker-k8s:$jar.version", 'tatorodrigo/spring-boot-docker-k8s:latest']
+}
+
+task pushDockerImageCurrentVersion(type: DockerPushImage) {
+    dependsOn buildDockerImage
+    imageName = "tatorodrigo/spring-boot-docker-k8s:$jar.version".toString()
+}
+
+task pushDockerImageLatest(type: DockerPushImage) {
+    dependsOn buildDockerImage
+    imageName = 'tatorodrigo/spring-boot-docker-k8s:latest'
+}
+
+task pushDockerImage() {
+    dependsOn pushDockerImageCurrentVersion, pushDockerImageLatest
 }
