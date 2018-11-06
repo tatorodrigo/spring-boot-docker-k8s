@@ -2,12 +2,15 @@ buildscript {
 	ext {
 		springBootVersion = '2.1.0.RELEASE'
 		lombokVersion = '1.18.2'
+		gradleDockerPluginVersion = '4.0.4'
 	}
 	repositories {
 		mavenCentral()
+        jcenter()
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("com.bmuschko:gradle-docker-plugin:${gradleDockerPluginVersion}")
 	}
 }
 
@@ -18,6 +21,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'com.bmuschko.docker-remote-api'
 
 group = 'br.com.tattobr'
 version = '0.0.1-SNAPSHOT'
@@ -25,12 +29,57 @@ sourceCompatibility = 1.8
 
 repositories {
 	mavenCentral()
+    jcenter()
 }
-
 
 dependencies {
 	implementation('org.springframework.boot:spring-boot-starter-web')
+    implementation('org.springframework.boot:spring-boot-starter-actuator')
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     apt("org.projectlombok:lombok:$lombokVersion")
+}
+
+/********************************************************************************
+ * DOCKER IMAGE BUILD/PUSH
+ ********************************************************************************/
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+docker {
+    registryCredentials {
+        username = getConfigurationProperty('DOCKER_USERNAME', 'docker.username')
+        password = getConfigurationProperty('DOCKER_PASSWORD', 'docker.password')
+        email = getConfigurationProperty('DOCKER_EMAIL', 'docker.email')
+    }
+}
+
+String getConfigurationProperty(String envVar, String sysProp) {
+    System.getenv(envVar) ?: project.findProperty(sysProp)
+}
+
+task createDockerfile(type: Dockerfile) {
+    destFile = project.file('build/docker/Dockerfile')
+    from 'openjdk:8-jre-alpine'
+    label(['maintainer': 'Rodrigo Botelho "tato.rodrigo@gmail.com"'])
+    copyFile jar.archiveName, '/app/spring-boot-docker-k8s.jar'
+    entryPoint 'java'
+    defaultCommand '-jar', '/app/spring-boot-docker-k8s.jar'
+    exposePort 8080
+    runCommand 'apk --update --no-cache add curl'
+    instruction 'HEALTHCHECK CMD curl -f http://localhost:8080/actuator/health || exit 1'
+}
+
+task copyArchiveFileToDockerDir(type: Sync) {
+    dependsOn build
+    from jar.archivePath
+    into createDockerfile.destFile.get().asFile.parentFile
+}
+
+createDockerfile.dependsOn copyArchiveFileToDockerDir
+
+task buildDockerImage(type: DockerBuildImage) {
+    dependsOn createDockerfile
+    inputDir = createDockerfile.destFile.get().asFile.parentFile
+    tags = ["tatorodrigo/spring-boot-docker-k8s:$jar.version", 'tatorodrigo/spring-boot-docker-k8s:latest']
 }
