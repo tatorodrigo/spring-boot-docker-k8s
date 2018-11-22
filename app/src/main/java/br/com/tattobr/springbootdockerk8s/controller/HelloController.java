@@ -61,13 +61,13 @@ public class HelloController {
     }
 
     @GetMapping("/delay")
-    public String sayHelloWithDelay() throws UnknownHostException, InterruptedException {
+    public String sayHelloWithDelay() throws UnknownHostException {
         log.info(
                 "m=sayHelloWithDelay Now it is {}. Up time: {} ms. Waiting...",
                 LocalDateTime.now(),
                 ManagementFactory.getRuntimeMXBean().getUptime()
         );
-        Thread.sleep(5000);
+        sleepWithBusyWait(15000);
         log.info(
                 "m=sayHelloWithDelay Now it is {}. Up time: {} ms. Done.",
                 LocalDateTime.now(),
@@ -77,5 +77,14 @@ public class HelloController {
                 "Hello from %s. ",
                 InetAddress.getLocalHost().getHostName()
         );
+    }
+
+    private void sleepWithBusyWait(long millis) {
+        long start = System.currentTimeMillis();
+        while (true) {
+            if (System.currentTimeMillis() - start > millis) {
+                break;
+            }
+        }
     }
 }
